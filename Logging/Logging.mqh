@@ -2,6 +2,26 @@
  * MQL 5 Simple logging facility
  *
  * (c) Copyright 2019, Anton Zelenov
+ *
+ *
+ *
+ * Usage:
+ *
+ * #include "../path/to/helpers/Logging/Logging.mqh"
+ * 
+ * // Create log file with fatal messages only
+ * Logger fatal_log("FileName.fatal.log", fatal_only=true);
+ * // Or with all messages
+ * Logger all_log("FileName.log");
+ *
+ * ...
+ *
+ * // Use logging with string. 
+ * all_log.Fatal("Something bad happened..")
+ * // etc
+ *
+ * Unfortunately MQL5 do not support varargs, thus you must preformat string to output it to log.
+ *
  */
  
 class Logger
@@ -58,18 +78,26 @@ private:
 		return _handle != INVALID_HANDLE;
 	}
    
+	string FormatMessage(LOG_LEVEL level, const string str)
+	{
+		string time_str = TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
+		return StringFormat("[%s] [%s] %s\n", time_str, _loglevel_char[level], str);
+	}
+
+	void WriteFormattedMessage(const string str)
+	{
+		FileWriteString(_handle, str);
+		FileFlush(_handle);
+	}
+
 	void WriteMessage(LOG_LEVEL level, const string str)
 	{
 		if (!IsActive())
 			return;   
 
-		string time_str = TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
-		string out = StringFormat("[%s] [%s] %s\n", time_str, _loglevel_char[level], str);
-	  
-		FileWriteString(_handle, out);
-		FileFlush(_handle);
+		WriteFormattedMessage(FormatMessage(level, str));
 	}
-   
+	   
 private:
 	bool _fatal_only;
 	int _handle;   
