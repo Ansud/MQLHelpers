@@ -10,7 +10,7 @@
  * #include "../path/to/helpers/Logging/Logging.mqh"
  * 
  * // Create log file with fatal messages only
- * Logger fatal_log("FileName.fatal.log", fatal_only=true);
+ * Logger fatal_log("FileName.fatal.log", LOG_LEVEL_FATAL);
  * // Or with all messages
  * Logger all_log("FileName.log");
  *
@@ -28,14 +28,15 @@ class Logger
 {
 private:
 	enum LOG_LEVEL {
-		FATAL,
-		INFO,
-		LOG_LEVEL_MAX
+		LOG_LEVEL_FATAL,
+		LOG_LEVEL_INFO
 	};
 
+	// If you need to add more logging levels, please update level characters at file end.
+	static const char LOGLEVEL_CHAR[];
 public:
-	Logger(const string filename, bool fatal_only=false) :
-		_fatal_only(fatal_only),
+	Logger(const string filename, LOG_LEVEL level=LOG_LEVEL_INFO) :
+		_level(level),
 		_handle(INVALID_HANDLE)
 	{
 		if (!StringLen(filename))
@@ -47,10 +48,6 @@ public:
 			printf("Logger construstor: Failed to open log file %s", filename);
 			return;
 		}
-
-		// Weird, but array initialization via curly brackets is not working.
-		_loglevel_char[FATAL] = 'F';
-		_loglevel_char[INFO] = 'I';
 	}
 
 	~Logger()
@@ -61,15 +58,12 @@ public:
 
 	void Fatal(const string str)
 	{
-		WriteMessage(FATAL, str);
+		WriteMessage(LOG_LEVEL_FATAL, str);
 	}
    
 	void Info(const string str)
 	{
-		if (_fatal_only)
-			return;
-
-		WriteMessage(INFO, str);
+		WriteMessage(LOG_LEVEL_INFO, str);
 	}
 
 private:
@@ -81,7 +75,7 @@ private:
 	string FormatMessage(LOG_LEVEL level, const string str)
 	{
 		string time_str = TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
-		return StringFormat("[%s] [%s] %s\n", time_str, _loglevel_char[level], str);
+		return StringFormat("[%s] [%s] %s\n", time_str, LOGLEVEL_CHAR[level], str);
 	}
 
 	void WriteFormattedMessage(const string str)
@@ -95,11 +89,18 @@ private:
 		if (!IsActive())
 			return;   
 
+		if (level > _level)
+			return;
+
 		WriteFormattedMessage(FormatMessage(level, str));
 	}
 	   
 private:
-	bool _fatal_only;
+	LOG_LEVEL _level;
 	int _handle;   
-	char _loglevel_char[LOG_LEVEL_MAX];
 };
+
+/*
+ * Initialization of the static constants
+ */
+static const char Logger::LOGLEVEL_CHAR[] = {'F', 'I'};
