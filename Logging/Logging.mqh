@@ -42,12 +42,14 @@ public:
 		if (!StringLen(filename))
 			return;
 	  
-		_handle = FileOpen(filename, FILE_WRITE | FILE_SHARE_READ | FILE_TXT, '\t', CP_UTF8);
+		_handle = FileOpen(filename, FILE_COMMON | FILE_WRITE | FILE_SHARE_READ | FILE_TXT, '\t', CP_UTF8);
       
 		if (_handle == INVALID_HANDLE) {
 			printf("Logger construstor: Failed to open log file %s", filename);
 			return;
 		}
+		
+		Fatal("Logger system initialized");
 	}
 
 	~Logger()
@@ -75,7 +77,7 @@ private:
 	string FormatMessage(LOG_LEVEL level, const string str)
 	{
 		string time_str = TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
-		return StringFormat("[%s] [%s] %s\n", time_str, LOGLEVEL_CHAR[level], str);
+		return StringFormat("[%s] [%c] %s\n", time_str, LOGLEVEL_CHAR[level], str);
 	}
 
 	void WriteFormattedMessage(const string str)
