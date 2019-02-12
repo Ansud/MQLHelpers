@@ -40,6 +40,9 @@ public:
 		_last_tick(0),
 		_symbol(symbol)
 	{
+		if (!StringLen(_symbol))
+			_symbol = Symbol();
+
 		if (!_ts.IsValid())
 			return;
 	}
@@ -63,6 +66,9 @@ public:
 
 		MqlTick data[];
 		CopyTicks(_symbol, data, COPY_TICKS_ALL, _last_tick);
+
+		if (!ArraySize(data))
+			return;
 
 		// First element is the last one of previous ticks series, thus skip it
 		for (int i = 1; i < ArraySize(data); i++)
