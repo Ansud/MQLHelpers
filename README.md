@@ -41,7 +41,8 @@ It is very useful to store tick history in CSV to analyze it via Python or R. An
 
 #include "../path/to/helpers/SmartTickSaver.mqh"
 
-// flush_ticks means that file flushed every flush_ticks ticks, if flush_ticks <= 0 flush will be executed every tick
+// flush_ticks means that file flushed every flush_ticks ticks, 
+// if flush_ticks <= 0 flush will be executed every tick
 SmartTickSaver ts("FileName.csv", SymbolName, flush_ticks=100);
 
 ...
